@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>jquery-helpers tests</title>
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.6.1.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/qunit/qunit-2.6.1.js"></script>
+  <script src="jquery-helpers.js"></script>
+  
+  <script>
+    QUnit.module('$.timeout');
+    QUnit.test('with normal execution, no value', function(assert) {
+      var done = assert.async();
+      assert.expect(1);
+      
+      $.timeout(1).done(function(val) {
+        assert.strictEqual(val, undefined, 'Callback received something other than undefined');
+        done();
+      });
+    });
+    
+    QUnit.test('with normal execution, with value', function(assert) {
+      var done = assert.async();
+      assert.expect(1);
+      
+      $.timeout(1, "fred").done(function(val) {
+        assert.strictEqual(val, "fred", "Callback didn't receive correct value");
+        done();
+      });
+    });
+    
+    QUnit.test('with cancel', function(assert) {
+      var promise = $.timeout(1).cancel(), done = assert.async();
+      $.timeout(1).done(function() {
+        assert.equal(promise.state(), 'pending', 'Cancelled promise is not in the correct state');
+        done();
+      });
+    });
+  </script>
+</body>
+</html>

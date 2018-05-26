@@ -16,6 +16,7 @@
       return $.extend(def.promise(), {
         cancel: function() {
           clearTimeout(id);
+          return this;
         }
       });
     },
