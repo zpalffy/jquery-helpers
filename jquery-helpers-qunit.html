@@ -11,10 +11,54 @@
   <div id="qunit-fixture"></div>
   
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
   <script src="https://code.jquery.com/qunit/qunit-2.6.1.js"></script>
   <script src="jquery-helpers.js"></script>
   
   <script>
+    var fixture = $('#qunit-fixture');
+    
+    QUnit.module('$.parms')
+    QUnit.test('with normal values', function(assert) {
+      var test = $.parseParameters('?name=fred&age=45&funny&&address=101%20Pinewood%20Dr.');
+      assert.deepEqual(test, {
+        address: '101 Pinewood Dr.',
+        name: 'fred',
+        age: '45',
+        funny: true
+      }, 'Parameter parsing failed.');
+      
+      test = $.parseParameters('?');
+      assert.deepEqual(test, {
+      }, 'Empty parameter parsing failed.');
+    });
+    
+    QUnit.module('$.handlebars');
+    QUnit.test('normal execution', function(assert) {
+      fixture.html(
+        '<div class="hbs-template">' +
+        '<dl>' + 
+        '  {{#each this}}' +
+        '    <dt>{{name}}</dt>' +
+        '    <dd>{{value}}</dd>' +
+        '  {{/each}}' +
+        '</dl>' +
+        '</div>'
+      );
+  
+      $('.hbs-template', fixture).handlebars([
+        {name: 'fred', value: 'red'},
+        {name: 'wilma', value: 42}
+      ]);
+      
+      assert.equal($('#hbs-template').length, 0, "Found a template in the DOM when there shouldn't be");
+      var list = fixture.find('dl');
+      assert.equal(list.length, 1, 'Did not find the expected DOM element.');
+      assert.equal(list.find('dt').length, 2, 'Did not find the correct number of list items.');
+      assert.equal(list.find('dt:first').text(), 'fred', 'Wrong value in DOM');
+      assert.equal(list.find('dd:last').text(), '42', 'Wrong value in DOM');
+    });
+    
     QUnit.module('$.timeout');
     QUnit.test('with normal execution, no value', function(assert) {
       var done = assert.async();
@@ -42,6 +86,31 @@
         assert.equal(promise.state(), 'pending', 'Cancelled promise is not in the correct state');
         done();
       });
+    });
+    
+    QUnit.module('$.webStorage');
+    QUnit.test('with regular object', function(assert) {
+      var key = 'qunit-test-key';
+      sessionStorage.removeItem(key);
+      assert.notOk(sessionStorage.getItem(key));
+      
+      // try a cache miss:
+      var done = assert.async();
+      $.webStorage(key, function() {
+        return "barney";
+      }).done(function(v) {
+        assert.strictEqual(v, "barney", "Value from webStorage was incorrect");
+        done();
+      });
+      
+      // try a cache hit:
+      done = assert.async(); // even though it should be synch!
+      $.webStorage(key, function() {
+        return 'wilma'; // incorrect value, should hit the cache first.
+      }).done(function(v) {
+        assert.strictEqual(v, "barney", "Value from webStorage was incorrect");
+        done();
+      });;
     });
   </script>
 </body>
