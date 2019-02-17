@@ -6,9 +6,7 @@
     // Usage: $.timeout(2000).done(...)
     // Usage: $.timeout(200).cancel() 
     timeout: function(ms, val) {
-      var def = $.Deferred(), id = setTimeout(function() {
-        def.resolve(val);
-      }, ms);
+      var def = $.Deferred(), id = setTimeout(() => def.resolve(val), ms);
 
       return $.extend(def.promise(), {
         cancel: function() {
@@ -16,6 +14,16 @@
           return this;
         }
       });
+    },
+
+    // Usage: $.getCSS('https://first.css', 'https://second.css').done(...)
+    getCSS: function(css) {
+      return $.when(...css.map(c => $.get(c).done(contents => $('<style>').append(contents).appendTo('head'))));
+    },
+
+    // Usage: $.json('/my.json', {name: 'Eric'}).done(...)
+    json: function(url, defaultVal) {
+      return $.getJSON(url).then(val => val, () => defaultVal);
     },
 
     // Usage: $.webStorage('my-item', function() { return $.ajax(...) })
@@ -39,6 +47,34 @@
       });
       
       return parms;
+    },
+
+    // Usage: $.worker('abc.js').work(parms).done(...)
+    // Usage: $.worker('abc.js').work(parms).terminate()
+    worker: function(filename) {
+      if (window.Worker) {
+        var worker = new Worker(filename);
+
+        return {
+          work: function(args) {
+            var deferred = $.Deferred();
+            worker.onmessage = function(event) {
+              deferred.resolve(event.data); 
+            };
+
+            worker.onerror = function(event) {
+              deferred.reject('Encountered error during work processing.', event); 
+            };
+
+            worker.postMessage(args);
+            return $.extend(deferred.promise(), {
+              terminate: worker.terminate
+            });
+          }
+        };
+      } else {
+        throw new Error('Worker object not supported in this browser.');
+      }
     }
   });
 

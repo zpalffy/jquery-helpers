@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>jquery-helpers tests</title>
-  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.6.1.css">
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.9.1.css">
 </head>
 <body>
   <div id="qunit"></div>
@@ -12,14 +12,14 @@
   
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
-  <script src="https://code.jquery.com/qunit/qunit-2.6.1.js"></script>
+  <script src="https://code.jquery.com/qunit/qunit-2.9.1.js"></script>
   <script src="jquery-helpers.js"></script>
   
   <script>
     var fixture = $('#qunit-fixture');
     
-    QUnit.module('$.parms')
-    QUnit.test('with normal values', function(assert) {
+    QUnit.module('Utils')
+    QUnit.test('parms with normal values', function(assert) {
       var test = $.parseParameters('?name=fred&age=45&funny&&address=101%20Pinewood%20Dr.');
       assert.deepEqual(test, {
         address: '101 Pinewood Dr.',
@@ -31,6 +31,19 @@
       test = $.parseParameters('?');
       assert.deepEqual(test, {
       }, 'Empty parameter parsing failed.');
+    });
+
+    QUnit.test('json with default value', function(assert) {
+      var done = assert.async();
+      var defaultVal = {
+        first: "Fred",
+        last: "Flintstone"
+      };
+
+      $.json('/doesnt/exist.json', defaultVal).done(function(v) {
+        assert.deepEqual(v, defaultVal);
+        done();
+      });
     });
     
     QUnit.module('$.handlebars');
@@ -90,6 +103,42 @@
     
     QUnit.module('$.webStorage');
     QUnit.test('with regular object', function(assert) {
+      var key = 'qunit-test-key';
+      sessionStorage.removeItem(key);
+      assert.notOk(sessionStorage.getItem(key));
+      
+      // try a cache miss:
+      var done = assert.async();
+      $.webStorage(key, function() {
+        return "barney";
+      }).done(function(v) {
+        assert.strictEqual(v, "barney", "Value from webStorage was incorrect");
+        done();
+      });
+      
+      // try a cache hit:
+      done = assert.async(); // even though it should be synch!
+      $.webStorage(key, function() {
+        return 'wilma'; // incorrect value, should hit the cache first.
+      }).done(function(v) {
+        assert.strictEqual(v, "barney", "Value from webStorage was incorrect");
+        done();
+      });
+    });
+
+    QUnit.module('$.worker');
+    QUnit.test('abc', function(assert) {
+      var worker = $.worker('jquery-helpers-test-worker.js'), done = assert.async(), value = "joe tester";
+
+      worker.work(value).done(function(val) {
+        assert.strictEqual(val, value, "Value from worker was incorrect");
+        done();
+      });
+
+
+
+
+
       var key = 'qunit-test-key';
       sessionStorage.removeItem(key);
       assert.notOk(sessionStorage.getItem(key));
