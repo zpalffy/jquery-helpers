@@ -4,7 +4,7 @@
   var asyncElement = function() {
     var id =  Math.random().toString(36).substring(7);
     return {
-      find: () => document.getElementById(id);
+      find: () => document.getElementById(id),
       element: '<span id="' + id + '"></span>'
     };
   }
@@ -26,7 +26,7 @@
     return new Handlebars.SafeString('<iframe class="youtube embed" src="https://www.youtube.com/embed/videoseries?list=' + 
       id + '" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>');
   });
-  
+
   Handlebars.registerHelper('viz', function(opts) {
     var ele = asyncElement();
 
