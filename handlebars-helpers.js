@@ -22,7 +22,7 @@
     var id = randomString();
 
     new Viz().renderSVGElement(opts.fn()).then(
-      graph => document.getElementById(id).innerHTML = graph, 
+      graph => document.getElementById(id).appendChild(graph), 
       ex => document.getElementById(id).innerHTML = '<div class="error">Error in {{ viz }} helper: ' + ex + "</div>"
     );
 
