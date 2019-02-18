@@ -17,6 +17,10 @@
     return new Handlebars.SafeString(moment().format(format));
   });
 
+  Handlebars.registerHelper('video', function(src) {
+    return new Handlebars.SafeString('<video class="embed" controls><source src="' + src + '">Your browser does not support the video tag.</video>');
+  });
+
   Handlebars.registerHelper('youtube', function(id) {
     return new Handlebars.SafeString('<iframe class="youtube embed" src="https://www.youtube.com/embed/' + 
       id + '" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>');
